@@ -7,6 +7,7 @@ type props = {
   BottomLeftID: string;
   handleRegionEnter: (region: string) => void;
   handleRegionLeave: (region: string) => void;
+  tileColors: Record<string, string>;
 }
 
 type quadrant = {
@@ -32,13 +33,13 @@ const getQuadrants = (quadrantID: string): quadrant => ({
 )
 
 const ComplexTile = (props: props) => {
-  // const { handleRegionEnter, handleRegionLeave } = props;
-  const colors = [ '#FF0000', '#FFD700', '#0000FF', '#00FF00' ];
+  const { handleRegionEnter, handleRegionLeave, tileColors } = props;
+  // const colors = [ '#FF0000', '#FFD700', '#0000FF', '#00FF00' ];
 
-  const topLeft = getQuadrants('TopLeft');
-  const topRight = getQuadrants('TopRight');
-  const bottomLeft = getQuadrants('BottomLeft');
-  const bottomRight = getQuadrants('BottomRight');
+  const topLeft = getQuadrants(props.TopLeftID);
+  const topRight = getQuadrants(props.TopRightID);
+  const bottomLeft = getQuadrants(props.BottomLeftID);
+  const bottomRight = getQuadrants(props.BottomRightID);
 
   const quadrants = {
     topLeft,
@@ -46,23 +47,6 @@ const ComplexTile = (props: props) => {
     bottomLeft,
     bottomRight
   }
-
-  // topLeft.top = 'topOuterLeft'; // top left top
-  // topRight.top = 'topOuterRight';
-  // topRight.right = 'rightOuterTop';
-  // bottomRight.right = 'rightOuterBottom';
-  // bottomRight.bottom = 'bottomOuterRight';
-  // bottomLeft.bottom = 'bottomOuterLeft';
-  // bottomLeft.left = 'leftOuterBottom';
-  // topLeft.left = 'leftOuterTop';
-  // bottomRight.top = 'circleSection1';
-  // bottomRight.left = 'circleSection2';
-  // bottomLeft.right = 'circleSection3';
-  // bottomLeft.top = 'circleSection4';
-  // topLeft.bottom = 'circleSection5';
-  // topLeft.right = 'circleSection6';
-  // topRight.left = 'circleSection7';
-  // topRight.bottom = 'circleSection8';
 
   const getQuadrantSide = (circleSectionID: string, quadrants: quadrants): string => {
     const mapping: Record<string, string> = {
@@ -79,76 +63,15 @@ const ComplexTile = (props: props) => {
     return mapping[circleSectionID];
   };
 
-  const graph = {
-    // Triangular regions
-    [topLeft.top]: [bottomRight.top, topRight.bottom, topLeft.left],
-    [topRight.top]: [bottomRight.left, bottomRight.top, topRight.right],
-    [topRight.right]: [bottomLeft.right, bottomRight.left, topRight.top],
-    [bottomRight.right]: [bottomLeft.top, bottomLeft.right, bottomRight.bottom],
-    [bottomRight.bottom]: [topLeft.bottom, bottomLeft.top, bottomRight.right],
-    [bottomLeft.bottom]: [topLeft.right, topLeft.bottom, bottomLeft.left],
-    [bottomLeft.left]: [topRight.left, topLeft.right, bottomLeft.bottom],
-    [topLeft.left]: [topRight.bottom, topRight.left, topLeft.top],
-
-    // Circle sections (45 degrees each)
-    [quadrants.bottomRight.top]: [topLeft.top, topRight.top, bottomRight.left, topRight.bottom],
-    [quadrants.bottomRight.left]: [topRight.top, topRight.right, bottomLeft.right, bottomRight.top],
-    [quadrants.bottomLeft.right]: [topRight.right, bottomRight.right, bottomLeft.top, bottomRight.left],
-    [quadrants.bottomLeft.top]: [bottomRight.right, bottomRight.bottom, topLeft.bottom, bottomLeft.right],
-    [quadrants.topLeft.bottom]: [bottomRight.bottom, bottomLeft.bottom, topLeft.right, bottomLeft.top],
-    [quadrants.topLeft.right]: [bottomLeft.bottom, bottomLeft.left, topRight.left, topLeft.bottom],
-    [quadrants.topRight.left]: [bottomLeft.left, topLeft.left, topRight.bottom, topLeft.right],
-    [quadrants.topRight.bottom]: [topLeft.left, topLeft.top, bottomRight.top, topRight.left]
-  };
-
-  function isColorValid(vertex, color, colorAssignments) {
-    const neighbors = graph[ vertex ];
-    return !neighbors.some(neighbor => colorAssignments[ neighbor ] === color);
-  }
-
-  const initialColors = () => {
-    const colorAssignments = {};
-    Object.keys(graph).forEach((vertex, index) => {
-      colorAssignments[ vertex ] = colors[ index % colors.length ];
-    });
-    return colorAssignments;
-  };
-
-  const [ tileColors, setTileColors ] = useState<Record<string, string>>(initialColors);
-  const [ hoveredRegions, setHoveredRegions ] = useState(new Set());
-
   const handleCircleSectionEnter = (circleSectionID: string) => {
     const regionID = getQuadrantSide(circleSectionID, quadrants);
     handleRegionEnter(regionID);
   }
 
-  const handleRegionEnter = (region) => {
-    console.log(region);
-    if (!hoveredRegions.has(region)) {
-      setHoveredRegions(prev => new Set(prev).add(region));
-      setTileColors(prev => {
-        const currentColor = prev[ region ];
-        const currentIndex = colors.indexOf(currentColor);
-        const nextColor = colors[ (currentIndex + 1) % colors.length ];
-        const newColors = { ...prev };
-        newColors[ region ] = nextColor;
-        return newColors;
-      });
-    }
-  };
-
   const handleCircleSectionLeave = (circleSectionID: string) => {
     const regionID = getQuadrantSide(circleSectionID, quadrants);
     handleRegionLeave(regionID);
   }
-
-  const handleRegionLeave = (region) => {
-    setHoveredRegions(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(region);
-      return newSet;
-    });
-  };
 
   // Helper function to create circle section path
   const getCircleSectionPath = (startAngle, endAngle) => {
