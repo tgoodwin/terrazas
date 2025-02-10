@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './App.css'
 
 
 interface GridDimensions {
@@ -50,7 +49,7 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
 
   useEffect(() => {
     function calculateGridSize(): void {
-      const padding = 32;
+      const padding = 5;
       const availableWidth = window.innerWidth - (padding * 2);
       const availableHeight = window.innerHeight - (padding * 2);
 
@@ -62,8 +61,6 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
         availableHeight / maxRows
       );
 
-      console.log('maxCols', maxCols);
-      console.log('maxRows', maxRows);
       setDimensions({
         rows: maxRows,
         cols: maxCols
@@ -89,13 +86,10 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
     });
   }
 
-  // setDimensions({ rows: 5, cols: 5 });
-
   function generateGraph(): Graph {
     const graph: Graph = {};
     const rowIds = generateIdentifiers(dimensions.rows);
     const colIds = generateIdentifiers(dimensions.cols);
-    console.log(rowIds, colIds);
 
     for (let r = 0; r < dimensions.rows; r++) {
       for (let c = 0; c < dimensions.cols; c++) {
@@ -153,13 +147,21 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
     return true;
   }
 
+  function shuffleArray<T>(array: T[]): T[] {
+    return array
+      .map(value => ({ value, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ value }) => value);
+  }
+
   function colorGraph(
     graph: Graph,
     fixedVertex: string,
     fixedColor: string
   ): ColorAssignments | null {
-    const vertices = Object.keys(graph);
+    const vertices = shuffleArray(Object.keys(graph));
     const colorAssignments: ColorAssignments = {};
+    console.log('computing color assignments');
 
     colorAssignments[ fixedVertex ] = fixedColor;
 
@@ -178,10 +180,12 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
     const remainingVertices = vertices.filter(v => v !== fixedVertex);
     for (const vertex of remainingVertices) {
       if (!colorVertex(vertex)) {
+        console.log('no valid color for vertex', vertex);
         return null;
       }
     }
 
+    console.log('finished computing color assignments');
     return colorAssignments;
   }
 
@@ -272,7 +276,6 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
           display: 'grid',
           gridTemplateColumns: `repeat(${dimensions.cols}, ${tileSize}px)`,
           gridTemplateRows: `repeat(${dimensions.rows}, ${tileSize}px)`,
-          gap: '4px'
         }}
       >
         {Array.from({ length: dimensions.rows }, (_, rowIndex) => {
@@ -290,9 +293,9 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
           });
         }).flat()}
       </div>
-      <div className="mt-4 text-sm text-gray-600">
+      {/* <div className="mt-4 text-sm text-gray-600">
         {dimensions.rows}×{dimensions.cols} grid - Hover over triangles to change their colors
-      </div>
+      </div> */}
     </div>
   );
 };
