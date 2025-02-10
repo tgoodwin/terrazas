@@ -154,6 +154,19 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
       .map(({ value }) => value);
   }
 
+  // TODO implement backtracking
+  function colorGraphRetry(
+    graph: Graph,
+    fixedVertex: string,
+    fixedColor: string
+  ): ColorAssignments {
+    let assignment: ColorAssignments | null = null;
+    while (!assignment) {
+      assignment = colorGraph(graph, fixedVertex, fixedColor);
+    }
+    return assignment;
+  }
+
   function colorGraph(
     graph: Graph,
     fixedVertex: string,
@@ -161,7 +174,6 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
   ): ColorAssignments | null {
     const vertices = shuffleArray(Object.keys(graph));
     const colorAssignments: ColorAssignments = {};
-    console.log('computing color assignments');
 
     colorAssignments[ fixedVertex ] = fixedColor;
 
@@ -180,21 +192,19 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
     const remainingVertices = vertices.filter(v => v !== fixedVertex);
     for (const vertex of remainingVertices) {
       if (!colorVertex(vertex)) {
-        console.log('no valid color for vertex', vertex);
         return null;
       }
     }
 
-    console.log('finished computing color assignments');
     return colorAssignments;
   }
 
   const [ solution, setSolution ] = useState<ColorAssignments>(() =>
-    colorGraph(graph, 'A1-Top', colors[ 0 ]) || {}
+    colorGraphRetry(graph, 'A1-Top', colors[ 0 ]) || {}
   );
 
   useEffect(() => {
-    const newSolution = colorGraph(graph, 'A1-Top', colors[ 0 ]);
+    const newSolution = colorGraphRetry(graph, 'A1-Top', colors[ 0 ]);
     if (newSolution) {
       setSolution(newSolution);
     }
@@ -208,7 +218,7 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
       const currentIndex = colors.indexOf(currentColor);
       const nextColor = colors[ (currentIndex + 1) % colors.length ];
 
-      const newSolution = colorGraph(graph, vertex, nextColor);
+      const newSolution = colorGraphRetry(graph, vertex, nextColor);
       if (newSolution) {
         setSolution(newSolution);
       }
