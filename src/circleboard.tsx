@@ -5,6 +5,8 @@ type props = {
   TopLeftID: string;
   BottomRightID: string;
   BottomLeftID: string;
+  handleRegionEnter: (region: string) => void;
+  handleRegionLeave: (region: string) => void;
 }
 
 type quadrant = {
@@ -14,47 +16,89 @@ type quadrant = {
   left: string;
 }
 
+type quadrants = {
+  topLeft: quadrant;
+  topRight: quadrant;
+  bottomLeft: quadrant;
+  bottomRight: quadrant;
+}
+
+const getQuadrants = (quadrantID: string): quadrant => ({
+    top: `${quadrantID}-Top`,
+    right: `${quadrantID}-Right`,
+    bottom: `${quadrantID}-Bottom`,
+    left: `${quadrantID}-Left`
+  }
+)
+
 const ComplexTile = (props: props) => {
+  // const { handleRegionEnter, handleRegionLeave } = props;
   const colors = [ '#FF0000', '#FFD700', '#0000FF', '#00FF00' ];
 
+  const topLeft = getQuadrants('TopLeft');
+  const topRight = getQuadrants('TopRight');
+  const bottomLeft = getQuadrants('BottomLeft');
+  const bottomRight = getQuadrants('BottomRight');
 
-  let topOuterLeft = 'topOuterLeft'; // top left
-  let topOuterRight = 'topOuterRight';
-  let rightOuterTop = 'rightOuterTop';
-  let rightOuterBottom = 'rightOuterBottom';
-  let bottomOuterRight = 'bottomOuterRight';
-  let bottomOuterLeft = 'bottomOuterLeft';
-  let leftOuterBottom = 'leftOuterBottom';
-  let leftOuterTop = 'leftOuterTop';
-  let circleSection1 = 'circleSection1';
-  let circleSection2 = 'circleSection2';
-  let circleSection3 = 'circleSection3';
-  let circleSection4 = 'circleSection4';
-  let circleSection5 = 'circleSection5';
-  let circleSection6 = 'circleSection6';
-  let circleSection7 = 'circleSection7';
-  let circleSection8 = 'circleSection8';
+  const quadrants = {
+    topLeft,
+    topRight,
+    bottomLeft,
+    bottomRight
+  }
+
+  // topLeft.top = 'topOuterLeft'; // top left top
+  // topRight.top = 'topOuterRight';
+  // topRight.right = 'rightOuterTop';
+  // bottomRight.right = 'rightOuterBottom';
+  // bottomRight.bottom = 'bottomOuterRight';
+  // bottomLeft.bottom = 'bottomOuterLeft';
+  // bottomLeft.left = 'leftOuterBottom';
+  // topLeft.left = 'leftOuterTop';
+  // bottomRight.top = 'circleSection1';
+  // bottomRight.left = 'circleSection2';
+  // bottomLeft.right = 'circleSection3';
+  // bottomLeft.top = 'circleSection4';
+  // topLeft.bottom = 'circleSection5';
+  // topLeft.right = 'circleSection6';
+  // topRight.left = 'circleSection7';
+  // topRight.bottom = 'circleSection8';
+
+  const getQuadrantSide = (circleSectionID: string, quadrants: quadrants): string => {
+    const mapping: Record<string, string> = {
+      circleSection1: quadrants.bottomRight.top,
+      circleSection2: quadrants.bottomRight.left,
+      circleSection3: quadrants.bottomLeft.right,
+      circleSection4: quadrants.bottomLeft.top,
+      circleSection5: quadrants.topLeft.bottom,
+      circleSection6: quadrants.topLeft.right,
+      circleSection7: quadrants.topRight.left,
+      circleSection8: quadrants.topRight.bottom
+    };
+
+    return mapping[circleSectionID];
+  };
 
   const graph = {
     // Triangular regions
-    topOuterLeft: [circleSection1, circleSection8, leftOuterTop],
-    topOuterRight: [circleSection2, circleSection1, rightOuterTop],
-    rightOuterTop: [circleSection3, circleSection2, topOuterRight],
-    rightOuterBottom: [circleSection4, circleSection3, bottomOuterRight],
-    bottomOuterRight: [circleSection5, circleSection4, rightOuterBottom],
-    bottomOuterLeft: [circleSection6, circleSection5, leftOuterBottom],
-    leftOuterBottom: [circleSection7, circleSection6, bottomOuterLeft],
-    leftOuterTop: [circleSection8, circleSection7, topOuterLeft],
+    [topLeft.top]: [bottomRight.top, topRight.bottom, topLeft.left],
+    [topRight.top]: [bottomRight.left, bottomRight.top, topRight.right],
+    [topRight.right]: [bottomLeft.right, bottomRight.left, topRight.top],
+    [bottomRight.right]: [bottomLeft.top, bottomLeft.right, bottomRight.bottom],
+    [bottomRight.bottom]: [topLeft.bottom, bottomLeft.top, bottomRight.right],
+    [bottomLeft.bottom]: [topLeft.right, topLeft.bottom, bottomLeft.left],
+    [bottomLeft.left]: [topRight.left, topLeft.right, bottomLeft.bottom],
+    [topLeft.left]: [topRight.bottom, topRight.left, topLeft.top],
 
     // Circle sections (45 degrees each)
-    circleSection1: [topOuterLeft, topOuterRight, circleSection2, circleSection8],
-    circleSection2: [topOuterRight, rightOuterTop, circleSection3, circleSection1],
-    circleSection3: [rightOuterTop, rightOuterBottom, circleSection4, circleSection2],
-    circleSection4: [rightOuterBottom, bottomOuterRight, circleSection5, circleSection3],
-    circleSection5: [bottomOuterRight, bottomOuterLeft, circleSection6, circleSection4],
-    circleSection6: [bottomOuterLeft, leftOuterBottom, circleSection7, circleSection5],
-    circleSection7: [leftOuterBottom, leftOuterTop, circleSection8, circleSection6],
-    circleSection8: [leftOuterTop, topOuterLeft, circleSection1, circleSection7]
+    [quadrants.bottomRight.top]: [topLeft.top, topRight.top, bottomRight.left, topRight.bottom],
+    [quadrants.bottomRight.left]: [topRight.top, topRight.right, bottomLeft.right, bottomRight.top],
+    [quadrants.bottomLeft.right]: [topRight.right, bottomRight.right, bottomLeft.top, bottomRight.left],
+    [quadrants.bottomLeft.top]: [bottomRight.right, bottomRight.bottom, topLeft.bottom, bottomLeft.right],
+    [quadrants.topLeft.bottom]: [bottomRight.bottom, bottomLeft.bottom, topLeft.right, bottomLeft.top],
+    [quadrants.topLeft.right]: [bottomLeft.bottom, bottomLeft.left, topRight.left, topLeft.bottom],
+    [quadrants.topRight.left]: [bottomLeft.left, topLeft.left, topRight.bottom, topLeft.right],
+    [quadrants.topRight.bottom]: [topLeft.left, topLeft.top, bottomRight.top, topRight.left]
   };
 
   function isColorValid(vertex, color, colorAssignments) {
@@ -70,8 +114,13 @@ const ComplexTile = (props: props) => {
     return colorAssignments;
   };
 
-  const [ tileColors, setTileColors ] = useState(initialColors);
+  const [ tileColors, setTileColors ] = useState<Record<string, string>>(initialColors);
   const [ hoveredRegions, setHoveredRegions ] = useState(new Set());
+
+  const handleCircleSectionEnter = (circleSectionID: string) => {
+    const regionID = getQuadrantSide(circleSectionID, quadrants);
+    handleRegionEnter(regionID);
+  }
 
   const handleRegionEnter = (region) => {
     console.log(region);
@@ -87,6 +136,11 @@ const ComplexTile = (props: props) => {
       });
     }
   };
+
+  const handleCircleSectionLeave = (circleSectionID: string) => {
+    const regionID = getQuadrantSide(circleSectionID, quadrants);
+    handleRegionLeave(regionID);
+  }
 
   const handleRegionLeave = (region) => {
     setHoveredRegions(prev => {
@@ -118,51 +172,51 @@ const ComplexTile = (props: props) => {
             {/* Outer triangular regions */}
             <path
               d="M 0 0 L 50 0 L 50 50 L 0 0"
-              fill={tileColors.topOuterLeft}
-              onMouseEnter={() => handleRegionEnter(topOuterLeft)}
-              onMouseLeave={() => handleRegionLeave(topOuterLeft)}
+              fill={tileColors[ topLeft.top  ]}
+              onMouseEnter={() => handleRegionEnter(topLeft.top)}
+              onMouseLeave={() => handleRegionLeave(topLeft.top)}
             />
             <path
               d="M 50 0 L 100 0 L 50 50 L 50 0"
-              fill={tileColors.topOuterRight}
-              onMouseEnter={() => handleRegionEnter(topOuterRight)}
-              onMouseLeave={() => handleRegionLeave(topOuterRight)}
+              fill={tileColors [ topRight.top ]}
+              onMouseEnter={() => handleRegionEnter(topRight.top)}
+              onMouseLeave={() => handleRegionLeave(topRight.top)}
             />
             <path
               d="M 100 0 L 100 50 L 50 50 L 100 0"
-              fill={tileColors.rightOuterTop}
-              onMouseEnter={() => handleRegionEnter(rightOuterTop)}
-              onMouseLeave={() => handleRegionLeave(rightOuterTop)}
+              fill={tileColors [ topRight.right ]}
+              onMouseEnter={() => handleRegionEnter(topRight.right)}
+              onMouseLeave={() => handleRegionLeave(topRight.right)}
             />
             <path
               d="M 100 50 L 100 100 L 50 50 L 100 50"
-              fill={tileColors.rightOuterBottom}
-              onMouseEnter={() => handleRegionEnter(rightOuterBottom)}
-              onMouseLeave={() => handleRegionLeave(rightOuterBottom)}
+              fill={tileColors [ bottomRight.right ]}
+              onMouseEnter={() => handleRegionEnter(bottomRight.right)}
+              onMouseLeave={() => handleRegionLeave(bottomRight.right)}
             />
             <path
               d="M 100 100 L 50 100 L 50 50 L 100 100"
-              fill={tileColors.bottomOuterRight}
-              onMouseEnter={() => handleRegionEnter(bottomOuterRight)}
-              onMouseLeave={() => handleRegionLeave(bottomOuterRight)}
+              fill={tileColors [ bottomRight.bottom ]}
+              onMouseEnter={() => handleRegionEnter(bottomRight.bottom)}
+              onMouseLeave={() => handleRegionLeave(bottomRight.bottom)}
             />
             <path
               d="M 50 100 L 0 100 L 50 50 L 50 100"
-              fill={tileColors.bottomOuterLeft}
-              onMouseEnter={() => handleRegionEnter(bottomOuterLeft)}
-              onMouseLeave={() => handleRegionLeave(bottomOuterLeft)}
+              fill={tileColors [ bottomLeft.bottom ]}
+              onMouseEnter={() => handleRegionEnter(bottomLeft.bottom)}
+              onMouseLeave={() => handleRegionLeave(bottomLeft.bottom)}
             />
             <path
               d="M 0 100 L 0 50 L 50 50 L 0 100"
-              fill={tileColors.leftOuterBottom}
-              onMouseEnter={() => handleRegionEnter(leftOuterBottom)}
-              onMouseLeave={() => handleRegionLeave(leftOuterBottom)}
+              fill={tileColors [ bottomLeft.left ]}
+              onMouseEnter={() => handleRegionEnter(bottomLeft.left)}
+              onMouseLeave={() => handleRegionLeave(bottomLeft.left)}
             />
             <path
               d="M 0 50 L 0 0 L 50 50 L 0 50"
-              fill={tileColors.leftOuterTop}
-              onMouseEnter={() => handleRegionEnter(leftOuterTop)}
-              onMouseLeave={() => handleRegionLeave(leftOuterTop)}
+              fill={tileColors [ topLeft.left ]}
+              onMouseEnter={() => handleRegionEnter(topLeft.left)}
+              onMouseLeave={() => handleRegionLeave(topLeft.left)}
             />
 
             {/* Circle sections */}
@@ -173,9 +227,9 @@ const ComplexTile = (props: props) => {
                 <path
                   key={i}
                   d={getCircleSectionPath(startAngle, endAngle)}
-                  fill={tileColors[ `circleSection${i + 1}` ]}
-                  onMouseEnter={() => handleRegionEnter(`circleSection${i + 1}`)}
-                  onMouseLeave={() => handleRegionLeave(`circleSection${i + 1}`)}
+                  fill={tileColors[getQuadrantSide(`circleSection${i + 1}`, quadrants)]}
+                  onMouseEnter={() => handleCircleSectionEnter(`circleSection${i + 1}`)}
+                  onMouseLeave={() => handleCircleSectionLeave(`circleSection${i + 1}`)}
                   className="transition-colors duration-200"
                 />
               );
