@@ -98,7 +98,7 @@ const Quadrant: React.FC<QuadrantProps & { quadrantType: keyof typeof QUADRANT_C
 					d={path}
 					fill={colors[ `${regionId}-${key}` ]}
 					stroke="white"
-					// strokeWidth="0.5"
+					strokeWidth="0.5"
 					onMouseEnter={() => onRegionEnter(`${regionId}-${key}`)}
 					onMouseLeave={() => onRegionLeave(`${regionId}-${key}`)}
 				/>
@@ -111,7 +111,7 @@ const Quadrant: React.FC<QuadrantProps & { quadrantType: keyof typeof QUADRANT_C
 					d={getCircleSectionPath(startAngle, endAngle, centerX, centerY)}
 					fill={colors[ `${regionId}-${key}` ]}
 					stroke="white"
-					// strokeWidth="0.5"
+					strokeWidth="0.5"
 					onMouseEnter={() => onRegionEnter(`${regionId}-${key}`)}
 					onMouseLeave={() => onRegionLeave(`${regionId}-${key}`)}
 				/>
