@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SingleTile from './square';
-import Circle from './circleboard';
+import { TopLeft, TopRight, BottomLeft, BottomRight } from './quadrant';
 
 interface GridDimensions {
   rows: number;
@@ -35,6 +35,35 @@ interface ColoredTileGridProps {
   minTileSize?: number;
 }
 
+enum TileType {
+  ST = "ST",  // Standard tile
+  TL = "TL",  // Top-left quadrant
+  TR = "TR",  // Top-right quadrant
+  BL = "BL",  // Bottom-left quadrant
+  BR = "BR"   // Bottom-right quadrant
+}
+
+function generateTileGrid(M: number, N: number): TileType[][] {
+  // Initialize grid with "ST" tiles
+  const grid: TileType[][] = Array.from({ length: M }, () => Array(N).fill(TileType.ST));
+
+  // Ensure a circle can fit
+  if (M < 2 || N < 2) {
+    return grid;  // No space for a circle
+  }
+
+  // Pick a random position for the top-left of the circle
+  const i = Math.floor(Math.random() * (M - 1));
+  const j = Math.floor(Math.random() * (N - 1));
+
+  // Assign quadrant tiles
+  grid[ i ][ j ] = TileType.TL;      // Top-left
+  grid[ i ][ j + 1 ] = TileType.TR;  // Top-right
+  grid[ i + 1 ][ j ] = TileType.BL;  // Bottom-left
+  grid[ i + 1 ][ j + 1 ] = TileType.BR;  // Bottom-right
+
+  return grid;
+}
 const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) => {
   const colors: string[] = [ 'red', 'yellow', 'green', 'blue' ];
   const colorMap: ColorMap = {
@@ -47,6 +76,8 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
   const [ dimensions, setDimensions ] = useState<GridDimensions>({ rows: 1, cols: 1 });
   const [ tileSize, setTileSize ] = useState<number>(minTileSize);
   const [ hoveredTriangles, setHoveredTriangles ] = useState<Set<string>>(new Set());
+
+  const [ tileAssignments, setTileAssignments ] = useState<TileType[][]>([]);
 
   useEffect(() => {
     function calculateGridSize(): void {
@@ -67,6 +98,7 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
         cols: maxCols
       });
       setTileSize(actualTileSize);
+      setTileAssignments(generateTileGrid(maxRows, maxCols));
     }
 
     calculateGridSize();
@@ -211,7 +243,7 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
     }
   }, [ dimensions ]);
 
-  const handleTriangleEnter = (vertex: string): void => {
+  const handleRegionEnter = (vertex: string): void => {
     console.log(vertex);
     if (!hoveredTriangles.has(vertex)) {
       setHoveredTriangles(prev => new Set(prev).add(vertex));
@@ -227,7 +259,7 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
     }
   };
 
-  const handleTriangleLeave = (vertex: string): void => {
+  const handleRegionLeave = (vertex: string): void => {
     setHoveredTriangles(prev => {
       const newSet = new Set(prev);
       newSet.delete(vertex);
@@ -253,6 +285,36 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
     return out;
   };
 
+  const renderTile = (tileType: TileType, regionId: string) => {
+    const sharedProps = {
+      colors: getColorAssignments(),
+      onRegionEnter: handleRegionEnter,
+      onRegionLeave: handleRegionLeave
+    };
+    switch (tileType) {
+      case TileType.ST:
+        return (
+          <SingleTile
+            {...sharedProps}
+            tileSize={tileSize}
+            key={regionId}
+            regionID={regionId}
+            colors={getTileColors(regionId)}
+          />
+        );
+      case TileType.TL:
+        return <TopLeft key={regionId} regionId={regionId} {...sharedProps} />;
+      case TileType.TR:
+        return <TopRight key={regionId} regionId={regionId} {...sharedProps} />;
+      case TileType.BL:
+        return <BottomLeft key={regionId} regionId={regionId} {...sharedProps} />;
+      case TileType.BR:
+        return <BottomRight key={regionId} regionId={regionId} {...sharedProps} />;
+    }
+  };
+
+  // const grid = generateTileGrid(dimensions.rows, dimensions.cols);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8">
       <div
@@ -268,17 +330,7 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
           return Array.from({ length: dimensions.cols }, (_, colIndex) => {
             const col = colIds[ colIndex ];
             const squareID = `${row}${col}`;
-            console.log(squareID);
-            return (
-              <SingleTile
-                tileSize={tileSize}
-                key={squareID}
-                squareID={squareID}
-                colors={getTileColors(squareID)}
-                enter={handleTriangleEnter}
-                leave={handleTriangleLeave}
-              />
-            );
+            return tileAssignments.length > 0 ? renderTile(tileAssignments[rowIndex][colIndex], squareID) : null;
           });
         }).flat()}
       </div>
