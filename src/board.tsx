@@ -187,6 +187,45 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
       .map(({ value }) => value);
   }
 
+  function colorGraphBacktracking(
+    graph: Graph,
+    fixedVertex: string,
+    fixedColor: string
+  ): ColorAssignments | null {
+    const vertices = Object.keys(graph);
+    const colorAssignments: ColorAssignments = {};
+
+    // Assign the fixed vertex color
+    colorAssignments[ fixedVertex ] = fixedColor;
+
+
+    function backtrack(index: number): boolean {
+      console.log('backtrack', index);
+      if (index === vertices.length) {
+        return true; // All vertices are colored
+      }
+
+      const vertex = vertices[ index ];
+      if (vertex === fixedVertex) {
+        return backtrack(index + 1); // Skip fixed vertex
+      }
+
+      for (const color of shuffleArray(colors)) {
+        if (isColorValid(vertex, color, graph, colorAssignments)) {
+          colorAssignments[ vertex ] = color;
+          if (backtrack(index + 1)) {
+            return true; // Successful assignment
+          }
+          delete colorAssignments[ vertex ]; // Backtrack
+        }
+      }
+
+      return false; // No valid color found
+    }
+
+    return backtrack(0) ? colorAssignments : null;
+  }
+
   // TODO implement backtracking
   function colorGraphRetry(
     graph: Graph,
@@ -194,10 +233,9 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
     fixedColor: string
   ): ColorAssignments {
     let assignment: ColorAssignments | null = null;
-    while (!assignment) {
-      assignment = colorGraph(graph, fixedVertex, fixedColor);
-    }
-    return assignment;
+    // const vertices = Object.keys(graph);
+    assignment = colorGraphBacktracking(graph, fixedVertex, fixedColor);
+    return assignment || {};
   }
 
   function colorGraph(
