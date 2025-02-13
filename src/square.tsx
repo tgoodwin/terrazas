@@ -22,6 +22,7 @@ const SingleTile: React.FC<SingleTileProps> = ({ tileSize, regionID: squareID, c
         onMouseEnter={() => enter(`${squareID}-Top`)}
         onMouseLeave={() => leave(`${squareID}-Top`)}
         stroke="white"
+        strokeWidth={1}
         className="transition-colors duration-200"
       />
       <path
@@ -30,6 +31,7 @@ const SingleTile: React.FC<SingleTileProps> = ({ tileSize, regionID: squareID, c
         onMouseEnter={() => enter(`${squareID}-Right`)}
         onMouseLeave={() => leave(`${squareID}-Right`)}
         stroke="white"
+        strokeWidth={1}
         className="transition-colors duration-200"
       />
       <path
@@ -38,6 +40,7 @@ const SingleTile: React.FC<SingleTileProps> = ({ tileSize, regionID: squareID, c
         onMouseEnter={() => enter(`${squareID}-Bottom`)}
         onMouseLeave={() => leave(`${squareID}-Bottom`)}
         stroke="white"
+        strokeWidth={1}
         className="transition-colors duration-200"
       />
       <path
@@ -46,6 +49,7 @@ const SingleTile: React.FC<SingleTileProps> = ({ tileSize, regionID: squareID, c
         onMouseEnter={() => enter(`${squareID}-Left`)}
         onMouseLeave={() => leave(`${squareID}-Left`)}
         stroke="white"
+        strokeWidth={1}
         className="transition-colors duration-200"
       />
     </svg>

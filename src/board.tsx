@@ -200,7 +200,6 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
 
 
     function backtrack(index: number): boolean {
-      console.log('backtrack', index);
       if (index === vertices.length) {
         return true; // All vertices are colored
       }
@@ -216,6 +215,7 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
           if (backtrack(index + 1)) {
             return true; // Successful assignment
           }
+          console.log('backtracing at index', index);
           delete colorAssignments[ vertex ]; // Backtrack
         }
       }
