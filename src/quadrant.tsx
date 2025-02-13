@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface QuadrantProps {
 	regionId: string;
 	colors: Record<string, string>;
 	onRegionEnter: (regionId: string) => void;
 	onRegionLeave: (regionId: string) => void;
-	debug?: boolean;
 }
 
 type PathConfig = {
@@ -84,7 +83,6 @@ const Quadrant: React.FC<QuadrantProps & { quadrantType: keyof typeof QUADRANT_C
 	colors,
 	onRegionEnter,
 	onRegionLeave,
-	debug = false,
 	quadrantType
 }) => {
 	const config = QUADRANT_CONFIGS[ quadrantType ];
@@ -120,78 +118,6 @@ const Quadrant: React.FC<QuadrantProps & { quadrantType: keyof typeof QUADRANT_C
 	);
 };
 
-const TopLeftQuadrant: React.FC<QuadrantProps> = (props) => (
-	<Quadrant {...props} quadrantType="TopLeft" />
-);
-
-const TopRightQuadrant: React.FC<QuadrantProps> = (props) => (
-	<Quadrant {...props} quadrantType="TopRight" />
-);
-
-const BottomLeftQuadrant: React.FC<QuadrantProps> = (props) => (
-	<Quadrant {...props} quadrantType="BottomLeft" />
-);
-
-const BottomRightQuadrant: React.FC<QuadrantProps> = (props) => (
-	<Quadrant {...props} quadrantType="BottomRight" />
-);
-
-const ComplexTile: React.FC<{ debug?: boolean; }> = ({ debug = false }) => {
-	const colors = [ '#FF0000', '#FFD700', '#0000FF', '#00FF00' ];
-
-	const [ colorState, setColorState ] = useState<Record<string, string>>(() => {
-		const initialColors: Record<string, string> = {};
-		const quadrants = [ 'Q1', 'Q2', 'Q3', 'Q4' ];
-		const regions = [ 'Top', 'Right', 'Bottom', 'Left' ];
-
-		quadrants.forEach((quadrant, qIndex) => {
-			regions.forEach((region, rIndex) => {
-				initialColors[ `${quadrant}-${region}` ] = colors[ (qIndex + rIndex) % colors.length ];
-			});
-		});
-
-		return initialColors;
-	});
-
-	const handleRegionEnter = (regionId: string) => {
-		setColorState(prev => {
-			const currentColor = prev[ regionId ];
-			const currentIndex = colors.indexOf(currentColor);
-			const nextColor = colors[ (currentIndex + 1) % colors.length ];
-			return {
-				...prev,
-				[ regionId ]: nextColor
-			};
-		});
-	};
-
-	const handleRegionLeave = (regionId: string) => {
-		// Optional: handle leave event if needed
-	};
-
-	const sharedProps = {
-		colors: colorState,
-		onRegionEnter: handleRegionEnter,
-		onRegionLeave: handleRegionLeave,
-		debug
-	};
-
-	return (
-		<div className="flex flex-col items-center p-8 bg-gray-100 rounded-lg">
-			<div className="bg-white p-4 rounded-lg shadow-lg">
-				<div style={{ width: 100, height: 100, border: '1px solid black' }}>
-					<svg viewBox="0 0 100 100" className="w-full h-full">
-						<TopLeftQuadrant {...sharedProps} regionId="Q1" />
-						<TopRightQuadrant {...sharedProps} regionId="Q2" />
-						<BottomLeftQuadrant {...sharedProps} regionId="Q3" />
-						<BottomRightQuadrant {...sharedProps} regionId="Q4" />
-					</svg>
-				</div>
-			</div>
-		</div>
-	);
-};
-
 const QuadrantContainer: React.FC<QuadrantProps & { children?: React.ReactNode }> = (props) => (
 	<div className="flex flex-col items-center bg-gray-100">
 		<div className="bg-white">
@@ -206,26 +132,24 @@ const QuadrantContainer: React.FC<QuadrantProps & { children?: React.ReactNode }
 
 export const TopLeft: React.FC<QuadrantProps> = (props) => (
 	<QuadrantContainer {...props}>
-		<TopLeftQuadrant {...props} />
+    <Quadrant {...props} quadrantType="TopLeft" />
 	</QuadrantContainer>
 );
 
 export const TopRight: React.FC<QuadrantProps> = (props) => (
 	<QuadrantContainer {...props}>
-		<TopRightQuadrant {...props} />
+    <Quadrant {...props} quadrantType="TopRight" />
 	</QuadrantContainer>
 );
 
 export const BottomLeft: React.FC<QuadrantProps> = (props) => (
 	<QuadrantContainer {...props}>
-		<BottomLeftQuadrant {...props} />
+    <Quadrant {...props} quadrantType="BottomLeft" />
 	</QuadrantContainer>
 );
 
 export const BottomRight: React.FC<QuadrantProps> = (props) => (
 	<QuadrantContainer {...props}>
-		<BottomRightQuadrant {...props} />
+    <Quadrant {...props} quadrantType="BottomRight" />
 	</QuadrantContainer>
 );
-
-export default ComplexTile;

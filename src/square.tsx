@@ -13,6 +13,8 @@ interface SingleTileProps {
   onRegionLeave: (region: string) => void;
 }
 
+const strokeWidth = 2.0;
+
 const SingleTile: React.FC<SingleTileProps> = ({ tileSize, regionID: squareID, colors, onRegionEnter: enter, onRegionLeave: leave }) => (
   <div style={{ width: `${tileSize}px`, height: `${tileSize}px` }}>
     <svg viewBox="0 0 100 100" className="absolute w-full h-full">
@@ -22,7 +24,7 @@ const SingleTile: React.FC<SingleTileProps> = ({ tileSize, regionID: squareID, c
         onMouseEnter={() => enter(`${squareID}-Top`)}
         onMouseLeave={() => leave(`${squareID}-Top`)}
         stroke="white"
-        strokeWidth={1}
+        strokeWidth={strokeWidth}
         className="transition-colors duration-200"
       />
       <path
@@ -31,7 +33,7 @@ const SingleTile: React.FC<SingleTileProps> = ({ tileSize, regionID: squareID, c
         onMouseEnter={() => enter(`${squareID}-Right`)}
         onMouseLeave={() => leave(`${squareID}-Right`)}
         stroke="white"
-        strokeWidth={1}
+        strokeWidth={strokeWidth}
         className="transition-colors duration-200"
       />
       <path
@@ -40,7 +42,7 @@ const SingleTile: React.FC<SingleTileProps> = ({ tileSize, regionID: squareID, c
         onMouseEnter={() => enter(`${squareID}-Bottom`)}
         onMouseLeave={() => leave(`${squareID}-Bottom`)}
         stroke="white"
-        strokeWidth={1}
+        strokeWidth={strokeWidth}
         className="transition-colors duration-200"
       />
       <path
@@ -49,7 +51,7 @@ const SingleTile: React.FC<SingleTileProps> = ({ tileSize, regionID: squareID, c
         onMouseEnter={() => enter(`${squareID}-Left`)}
         onMouseLeave={() => leave(`${squareID}-Left`)}
         stroke="white"
-        strokeWidth={1}
+        strokeWidth={strokeWidth}
         className="transition-colors duration-200"
       />
     </svg>

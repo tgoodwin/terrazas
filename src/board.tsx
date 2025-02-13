@@ -65,12 +65,12 @@ function generateTileGrid(M: number, N: number): TileType[][] {
   return grid;
 }
 const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) => {
-  const colors: string[] = [ 'red', 'yellow', 'green', 'blue' ];
+  const colors: string[] = [ 'red', 'yellow', 'green', 'blue'];
   const colorMap: ColorMap = {
-    'red': '#FF0000',
-    'yellow': '#FFD700',
-    'blue': '#0000FF',
-    'green': '#00FF00'
+    'red': '#EE334E',
+    'yellow': '#FCB131',
+    'blue': '#0081C8',
+    'green': '#00A651'
   };
 
   const [ dimensions, setDimensions ] = useState<GridDimensions>({ rows: 1, cols: 1 });
@@ -81,7 +81,7 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
 
   useEffect(() => {
     function calculateGridSize(): void {
-      const padding = 5;
+      const padding = 20;
       const availableWidth = window.innerWidth - (padding * 2);
       const availableHeight = window.innerHeight - (padding * 2);
 
@@ -227,62 +227,30 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
   }
 
   // TODO implement backtracking
-  function colorGraphRetry(
-    graph: Graph,
-    fixedVertex: string,
-    fixedColor: string
-  ): ColorAssignments {
-    let assignment: ColorAssignments | null = null;
-    // const vertices = Object.keys(graph);
-    assignment = colorGraphBacktracking(graph, fixedVertex, fixedColor);
-    return assignment || {};
-  }
-
   function colorGraph(
     graph: Graph,
     fixedVertex: string,
     fixedColor: string
-  ): ColorAssignments | null {
-    const vertices = shuffleArray(Object.keys(graph));
-    const colorAssignments: ColorAssignments = {};
-
-    colorAssignments[ fixedVertex ] = fixedColor;
-
-    function colorVertex(vertex: string): boolean {
-      if (vertex === fixedVertex) return true;
-
-      for (const color of colors) {
-        if (isColorValid(vertex, color, graph, colorAssignments)) {
-          colorAssignments[ vertex ] = color;
-          return true;
-        }
-      }
-      return false;
+  ): ColorAssignments {
+    const assignment = colorGraphBacktracking(graph, fixedVertex, fixedColor);
+    if (!assignment) {
+      console.error('No solution found');
     }
-
-    const remainingVertices = vertices.filter(v => v !== fixedVertex);
-    for (const vertex of remainingVertices) {
-      if (!colorVertex(vertex)) {
-        return null;
-      }
-    }
-
-    return colorAssignments;
+    return assignment || {};
   }
 
   const [ solution, setSolution ] = useState<ColorAssignments>(() =>
-    colorGraphRetry(graph, 'A1-Top', colors[ 0 ]) || {}
+    colorGraph(graph, 'A1-Top', colors[ 0 ]) || {}
   );
 
   useEffect(() => {
-    const newSolution = colorGraphRetry(graph, 'A1-Top', colors[ 0 ]);
+    const newSolution = colorGraph(graph, 'A1-Top', colors[ 0 ]);
     if (newSolution) {
       setSolution(newSolution);
     }
   }, [ dimensions ]);
 
   const handleRegionEnter = (vertex: string): void => {
-    console.log(vertex);
     if (!hoveredTriangles.has(vertex)) {
       setHoveredTriangles(prev => new Set(prev).add(vertex));
 
@@ -290,7 +258,7 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
       const currentIndex = colors.indexOf(currentColor);
       const nextColor = colors[ (currentIndex + 1) % colors.length ];
 
-      const newSolution = colorGraphRetry(graph, vertex, nextColor);
+      const newSolution = colorGraph(graph, vertex, nextColor);
       if (newSolution) {
         setSolution(newSolution);
       }
@@ -351,8 +319,6 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
     }
   };
 
-  // const grid = generateTileGrid(dimensions.rows, dimensions.cols);
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8">
       <div
@@ -361,6 +327,7 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
           display: 'grid',
           gridTemplateColumns: `repeat(${dimensions.cols}, ${tileSize}px)`,
           gridTemplateRows: `repeat(${dimensions.rows}, ${tileSize}px)`,
+          padding: '20px',
         }}
       >
         {Array.from({ length: dimensions.rows }, (_, rowIndex) => {
@@ -368,7 +335,7 @@ const ColoredTileGrid: React.FC<ColoredTileGridProps> = ({ minTileSize = 200 }) 
           return Array.from({ length: dimensions.cols }, (_, colIndex) => {
             const col = colIds[ colIndex ];
             const squareID = `${row}${col}`;
-            return tileAssignments.length > 0 ? renderTile(tileAssignments[rowIndex][colIndex], squareID) : null;
+            return tileAssignments.length > 0 ? renderTile(tileAssignments[ rowIndex ][ colIndex ], squareID) : null;
           });
         }).flat()}
       </div>
